@@ -1,0 +1,6 @@
+pillow==8.1.0
+pyzbar==0.1.8
+psycopg2-binary==2.8.6
+boto3==1.16.55
+watchdog==1.0.2
+watchtower==1.0.5

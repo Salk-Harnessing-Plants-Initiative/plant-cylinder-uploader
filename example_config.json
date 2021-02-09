@@ -1,0 +1,29 @@
+{
+	"unprocessed_dir" : "C:\\Users\\Greenhouse\\Desktop\\uploader\\unprocessed",
+	"error_dir" : "C:\\Users\\Greenhouse\\Desktop\\uploader\\error",
+	"done_dir" : "C:\\Users\\Greenhouse\\Desktop\\uploader\\done",
+	"upload_device_id" : "giraffe_1",
+	"log_heartbeat" : true,
+	"heartbeat_seconds" : 21600,
+	"aws_access_key_id" : "",
+	"aws_secret_access_key" : "",
+	"aws_region_name" : "",
+	"postgres" : {
+		"user" : "",
+		"password" : "",
+		"host" : "",
+		"port" : "",
+		"database" : ""
+	},
+	"cloudwatch" : {
+		"use_cloudwatch" : true,
+  		"log_group" : "s3-desktop-uploader",
+  		"stream_name": "giraffe_1",
+  		"send_interval" : 1
+	},
+	"s3" : {
+		"bucket": "dev-salk-hpi",
+  		"bucket_dir": "image/giraffe/raw/",
+  		"####COMMENT" : "must include '/' at the end for bucket_dir"
+	}
+}
