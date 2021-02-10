@@ -1,10 +1,16 @@
-import subprocess
+import json
+import boto3
 
-PATH_TO_PYTHON = 'C:\\Users\\Greenhouse\\AppData\\Local\\Programs\\Python\\Python36\\python.exe'
-PATH_TO_MAIN = "C:\\Users\\Greenhouse\\Documents\\greenhouse-giraffe-uploader\\main.py"
+d = {
+	"qr_code" : "GI-wNbpbOPEMsMHRqKMsL",
+	"upload_device+_id" : "testing"
+}
 
-with open('output.log', 'a') as f:
-	try:
-	    p = subprocess.run([PATH_TO_PYTHON, PATH_TO_MAIN], stdout=f, stderr=subprocess.STDOUT)
-	except Exception as e:
-	    f.write("ERROR: " + repr(e) + "\n")
+client = boto3.client('lambda')
+response = client.invoke(
+    FunctionName='arn:aws:lambda:us-west-2:295111184710:function:preflight-cylinder-image-upload',
+    LogType='None',
+    Payload=json.dumps(d)
+)
+payload = json.loads(response['Payload'].read())
+print(payload['qr_code_valid'])
