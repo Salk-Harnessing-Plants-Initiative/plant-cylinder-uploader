@@ -3,7 +3,7 @@ import boto3
 
 d = {
 	"qr_code" : "GI-wNbpbOPEMsMHRqKMsL",
-	"upload_device+_id" : "testing"
+	"upload_device_id" : "testing"
 }
 
 client = boto3.client('lambda')

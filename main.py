@@ -1,6 +1,8 @@
 import logging
 import json
 from datetime import datetime
+# For making the "upload sessions" unique
+import nanoid
 # Path-related
 import os
 import shutil
@@ -216,19 +218,6 @@ class UploaderEventHandler(FileSystemEventHandler):
                 t = threading.Timer(SECONDS_DELAY, process, args=(self.config,))
                 t.start()
 
-def generate_bucket_key(file_path, s3_directory, plant_id, subfolder_name):
-    """Keep things nice and random to prevent collisions
-    "/Users/russell/Documents/taco_tuesday.jpg" becomes "raw/taco_tuesday-b94b0793-6c74-44a9-94e0-00420711130d.jpg"
-    Note: We still like to keep the basename because some files' only timestamp is in the filename
-
-    Also removes spaces, parenthesis in the filename
-    """
-    root_ext = os.path.splitext(ntpath.basename(file_path));
-    filename = root_ext[0] + "-" + str(uuid.uuid4()) + root_ext[1]
-    filename = filename.replace(" ", "").replace("(", "").replace(")", "")
-    return s3_directory + filename
-
-
 def get_metadata(file_path, config, last_reference, qr_code, qr_codes):
     metadata = {"Metadata": {}}
     metadata["Metadata"]["user_input_filename"] = os.path.basename(file_path)
@@ -241,34 +230,73 @@ def get_metadata(file_path, config, last_reference, qr_code, qr_codes):
         pass
     return metadata
 
+def generate_plant_cylinder_s3_key(file_path, s3_directory, plant_or_container_id, image_timestamp):
+    """
+    /path/to/file/file.jpg becomes s3/directorypath/id/image_timestamp_date/files_4f9zd13a42.jpg
+    Removes spaces, parenthesis in the filename, so "file( )()().jpg" becomes "file.jpg"
+    Adds a cute little nanoid thing to avoid collisions in s3 ("4f9zd13a42")
+
+    s3_directory must end with a slash: "hello/world/"
+    """
+    filename = ntpath.basename(file_path)
+    root_ext = os.path.splitext(filename);
+    randomstr = nanoid.generate('1234567890abcdef', 10)
+    filename = root_ext[0] + "_" + randomstr + root_ext[1]
+    filename = filename.replace(" ", "").replace("(", "").replace(")", "")
+    s3_key = s3_directory + "{}/{}/{}".format(
+        plant_or_container_id, image_timestamp.strftime('%Y-%m-%d'), filename)
+    return s3_key
+
+def qr_code_valid(lambda_client, qr_code, upload_device_id="testing"):
+    d = {
+        "qr_code" : qr_code,
+        "upload_device_id" : upload_device_id
+    }   
+    response = client.invoke(
+        FunctionName='arn:aws:lambda:us-west-2:295111184710:function:preflight-cylinder-image-upload',
+        LogType='None',
+        Payload=json.dumps(d)
+    )
+    payload = json.loads(response['Payload'].read())
+    return payload['qr_code_valid']
+
 def process(config):
     logger = logging.getLogger(__name__)
     unprocessed_dir, error_dir, done_dir = config['unprocessed_dir'], config['error_dir'], config['done_dir']
-    
-
-
-
     s3_client = boto3.client('s3', region_name=config['aws_region_name'], 
         aws_access_key_id=config['aws_access_key_id'], aws_secret_access_key=config['aws_secret_access_key'])
+    lambda_client = boto3.client('lambda', region_name=config['aws_region_name'], 
+        aws_access_key_id=config['aws_access_key_id'], aws_secret_access_key=config['aws_secret_access_key'])
 
-    files = get_files_alphabetical_order(unprocessed_dir)
+    # Uniquely distinguishes this particular call of process()
+    # (Useful if someone uploads 2 folders with the same name on the same day, 
+    # such as if they imaged the same cylinder twice, for instance)
+    upload_session = nanoid.generate('1234567890abcdef', 10)
 
+    # Get all the files in the leaf directories (ignores any direct files in unprocessed_dir)
+    paths = get_files_for_leaf_directories(unprocessed_dir)
 
-
-    if len(files) > 0:
-        logger.info("Processing files in the order: {}".format(files))
-    for file in files:
-        path = os.path.join(unprocessed_dir, file)
-        # QR code if present
-        
-
-
+    if len(paths) > 0:
+        logger.info("Processing files in the order: {}".format(paths))
+    for path in paths:
         # Process
         try:
             bucket = config['s3']['bucket']
-            key = generate_bucket_key(path, config['s3']['bucket_dir'])
-            qr_code = last_reference["qr_code"]
-            metadata = get_metadata(path, config, last_reference, qr_code, qr_codes)
+            bucket_dir = config['s3']['bucket_dir']
+            plant_or_container_id = os.path.dirname(path)
+            # Validate folder is correct id
+            if not qr_code_valid(lambda_client, plant_or_container_id, config['upload_device_id']):
+                raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
+            # Generate key
+            image_timestamp = creation_date(path).astimezone()
+            key = generate_plant_cylinder_s3_key(path, bucket_dir, plant_or_container_id, image_timestamp)
+            # Collect metadata
+            metadata = {"Metadata": {}}
+            metadata["Metadata"]["user_input_filename"] = os.path.basename(path)
+            metadata["Metadata"]["upload_device_id"] = config['upload_device_id']
+            metadata["Metadata"]["qr_code"] = plant_or_container_id
+            metadata["Metadata"]["file_created"] = get_file_created(file_path)
+            # Finally, upload
             s3_client.upload_file(path, bucket, key, ExtraArgs=metadata)
         except Exception as e:
             logger.error(e)
