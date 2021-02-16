@@ -294,6 +294,7 @@ def process(config):
             metadata = {"Metadata": {}}
             metadata["Metadata"]["user_input_filename"] = os.path.basename(path)
             metadata["Metadata"]["upload_device_id"] = config['upload_device_id']
+            metadata["Metadata"]["upload_session"] = upload_session
             metadata["Metadata"]["qr_code"] = plant_or_container_id
             metadata["Metadata"]["file_created"] = get_file_created(file_path)
             # Finally, upload
