@@ -130,10 +130,11 @@ def move(src_path, dst_path, src_root=None):
     # Move file, make directories if needed
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
     shutil.move(src_path, dst_path)
-    # Delete directory if necessary
+    # Delete directory if necessary (recursively)
     directory = os.path.dirname(src_path)
-    if (src_root is not None and src_path.startswith(src_root) and directory != src_root):
+    while (src_root is not None and src_path.startswith(src_root) and directory != src_root):
         delete_directory_if_empty_or_hidden(directory)
+        directory = os.path.dirname(directory)
 
 def assert_directories_configured(config):
     # None of the dirs should be the same as another
@@ -218,18 +219,6 @@ class UploaderEventHandler(FileSystemEventHandler):
                 t = threading.Timer(SECONDS_DELAY, process, args=(self.config,))
                 t.start()
 
-def get_metadata(file_path, config, last_reference, qr_code, qr_codes):
-    metadata = {"Metadata": {}}
-    metadata["Metadata"]["user_input_filename"] = os.path.basename(file_path)
-    metadata["Metadata"]["upload_device_id"] = config['upload_device_id']
-    metadata["Metadata"]["qr_code"] = qr_code
-    metadata["Metadata"]["qr_codes"] = str(qr_codes)
-    try:
-        metadata["Metadata"]["file_created"] = get_file_created(file_path)
-    except:
-        pass
-    return metadata
-
 def generate_plant_cylinder_s3_key(file_path, s3_directory, plant_or_container_id, image_timestamp):
     """
     /path/to/file/file.jpg becomes s3/directorypath/id/image_timestamp_date/files_4f9zd13a42.jpg
@@ -252,7 +241,7 @@ def qr_code_valid(lambda_client, qr_code, upload_device_id="testing"):
         "qr_code" : qr_code,
         "upload_device_id" : upload_device_id
     }   
-    response = client.invoke(
+    response = lambda_client.invoke(
         FunctionName='arn:aws:lambda:us-west-2:295111184710:function:preflight-cylinder-image-upload',
         LogType='None',
         Payload=json.dumps(d)
