@@ -236,13 +236,13 @@ def generate_plant_cylinder_s3_key(file_path, s3_directory, plant_or_container_i
         plant_or_container_id, image_timestamp.strftime('%Y-%m-%d'), filename)
     return s3_key
 
-def qr_code_valid(lambda_client, qr_code, upload_device_id="testing"):
+def qr_code_valid(lambda_arn, lambda_client, qr_code, upload_device_id="testing"):
     d = {
         "qr_code" : qr_code,
         "upload_device_id" : upload_device_id
     }   
     response = lambda_client.invoke(
-        FunctionName='arn:aws:lambda:us-west-2:295111184710:function:preflight-cylinder-image-upload',
+        FunctionName=lambda_arn,
         LogType='None',
         Payload=json.dumps(d)
     )
@@ -274,7 +274,7 @@ def process(config):
             bucket_dir = config['s3']['bucket_dir']
             plant_or_container_id = os.path.dirname(path)
             # Validate folder is correct id
-            if not qr_code_valid(lambda_client, plant_or_container_id, config['upload_device_id']):
+            if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
                 raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
             # Generate key
             image_timestamp = creation_date(path).astimezone()

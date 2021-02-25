@@ -18,5 +18,6 @@
 		"bucket": "dev-salk-hpi",
   		"bucket_dir": "image/giraffe/raw/",
   		"####COMMENT" : "must include '/' at the end for bucket_dir"
-	}
+	},
+	"preflight_lambda_arn" : ""
 }
