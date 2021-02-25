@@ -294,7 +294,7 @@ def process(config):
         else:
             done_path = make_parallel_path(unprocessed_dir, done_dir, path)
             move(path, done_path)
-    if len(files) > 0:
+    if len(paths) > 0:
         logger.info("Done processing the batch")
 
 def main():
