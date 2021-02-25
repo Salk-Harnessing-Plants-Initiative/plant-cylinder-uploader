@@ -271,7 +271,7 @@ def process(config):
         try:
             bucket = config['s3']['bucket']
             bucket_dir = config['s3']['bucket_dir']
-            plant_or_container_id = os.path.dirname(path)
+            plant_or_container_id = os.path.basename(os.path.dirname(path))
             # Validate folder is correct id
             if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
                 raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
