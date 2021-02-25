@@ -284,7 +284,7 @@ def process(config):
             metadata["Metadata"]["upload_device_id"] = config['upload_device_id']
             metadata["Metadata"]["upload_session"] = upload_session
             metadata["Metadata"]["qr_code"] = plant_or_container_id
-            metadata["Metadata"]["file_created"] = get_file_created(file_path)
+            metadata["Metadata"]["file_created"] = get_file_created(path)
             # Finally, upload
             s3_client.upload_file(path, bucket, key, ExtraArgs=metadata)
         except Exception as e:
