@@ -290,10 +290,10 @@ def process(config):
         except Exception as e:
             logger.error(e)
             error_path = make_parallel_path(unprocessed_dir, error_dir, path)
-            move(path, error_path)
+            move(path, error_path, src_root=unprocessed_dir)
         else:
             done_path = make_parallel_path(unprocessed_dir, done_dir, path)
-            move(path, done_path)
+            move(path, done_path, src_root=unprocessed_dir)
     if len(paths) > 0:
         logger.info("Done processing the batch")
 
