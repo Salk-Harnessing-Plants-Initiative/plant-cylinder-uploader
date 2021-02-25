@@ -276,7 +276,7 @@ def process(config):
             if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
                 raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
             # Generate key
-            image_timestamp = creation_date(path).astimezone()
+            image_timestamp = datetime.fromtimestamp(creation_date(path)).astimezone()
             key = generate_plant_cylinder_s3_key(path, bucket_dir, plant_or_container_id, image_timestamp)
             # Collect metadata
             metadata = {"Metadata": {}}
