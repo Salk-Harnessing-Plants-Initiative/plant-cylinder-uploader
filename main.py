@@ -169,7 +169,6 @@ def setup_remote_logging(config):
 def init(config):
     print("Initializing...")
     assert_directories_configured(config)
-    assert_postgres_working(config)
     assert_s3_working(config)
     setup_remote_logging(config)
 
