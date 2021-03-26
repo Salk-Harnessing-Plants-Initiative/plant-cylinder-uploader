@@ -12,6 +12,7 @@ Similar to https://github.com/Salk-Harnessing-Plants-Initiative/greenhouse-giraf
 * `requirements.txt`
 * `cp example_config.json config.json`
 * AWS IAM user who can upload to s3 and invoke the validation function
+* validation test using `python main.py`
 * run the python script as an automatic service using NSSM
 
 # Release notes
