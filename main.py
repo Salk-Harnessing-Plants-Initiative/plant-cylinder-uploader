@@ -274,7 +274,11 @@ def process(config):
             plant_or_container_id = os.path.basename(os.path.dirname(path))
             # Validate folder is correct id
             if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
-                raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
+                # Try again for instance where folder is named `{arbitrary something}.{plant_or_container_id}`
+                corrected = plant_or_container_id.split(".")[-1]
+                if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
+                    raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
+                plant_or_container_id = corrected
             # Generate key
             image_timestamp = datetime.fromtimestamp(creation_date(path)).astimezone()
             key = generate_plant_cylinder_s3_key(path, bucket_dir, plant_or_container_id, image_timestamp)

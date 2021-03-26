@@ -7,7 +7,13 @@ Python-based Windows service to upload cylinder images to AWS S3.
 * The images are uploaded with a unique `upload_session` metadata value so that if you upload two folders that are named the same and contain images on the same day, you can still distinguish which folder it belongs to. (Query postgres to check that for multiple `upload_session`s in the same s3 subdirectory, or manually check in s3).
 
 # Installation
+Similar to https://github.com/Salk-Harnessing-Plants-Initiative/greenhouse-giraffe-uploader
+
 * `requirements.txt`
 * `cp example_config.json config.json`
 * AWS IAM user who can upload to s3 and invoke the validation function
 * run the python script as an automatic service using NSSM
+
+# Release notes
+* 1.1.0: Allows for folders which are named `{arbitrary something}.{plant_or_container_id}` so that users can encode a human-readable component to their cylinder naming/QR encoding during label printing
+* 1.0.0: Validation-tested
