@@ -276,7 +276,7 @@ def process(config):
             if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
                 # Try again for instance where folder is named `{arbitrary something}.{plant_or_container_id}`
                 corrected = plant_or_container_id.split(".")[-1]
-                if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, plant_or_container_id, config['upload_device_id']):
+                if not qr_code_valid(config['preflight_lambda_arn'], lambda_client, corrected, config['upload_device_id']):
                     raise Exception("Invalid folder {} doesn't match a plant_id or container_id".format(plant_or_container_id))
                 plant_or_container_id = corrected
             # Generate key
