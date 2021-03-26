@@ -9,9 +9,9 @@ Python-based Windows service to upload cylinder images to AWS S3.
 # Installation
 Similar to https://github.com/Salk-Harnessing-Plants-Initiative/greenhouse-giraffe-uploader
 
-* `requirements.txt`
-* `cp example_config.json config.json`
 * AWS IAM user who can upload to s3 and invoke the validation function
+* `pip install -r requirements.txt`
+* `cp example_config.json config.json`, fill it out
 * validation test using `python main.py`
 * run the python script as an automatic service using NSSM
 
